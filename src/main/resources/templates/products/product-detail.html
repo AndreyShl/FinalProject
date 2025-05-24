@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${product.name}">Product Detail</title>
+    <style th:replace="fragments/header :: headerStyle"></style>
+    <style th:replace="fragments/footer :: footerStyle"></style>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .main-content {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            color: #333;
+            margin: 0;
+        }
+
+        .back-link {
+            color: #2196F3;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .product-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .product-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin: 0 0 10px 0;
+        }
+
+        .product-category {
+            color: #666;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .product-price-container {
+            text-align: right;
+        }
+
+        .product-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 0 0 5px 0;
+        }
+
+        .product-discount {
+            color: #f44336;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .product-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .product-description {
+            grid-column: 1 / -1;
+            color: #333;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .product-info-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin: 0 0 10px 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .product-remains {
+            font-size: 16px;
+            color: #666;
+            margin: 0;
+        }
+
+        .product-remains.low {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .add-to-cart-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .add-to-cart-btn:hover {
+            background-color: #3e8e41;
+        }
+
+        .add-to-cart-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1 class="page-title">Product Details</h1>
+        <a th:href="@{/products/category/{id}(id=${product.category.id})}" class="back-link">← Back to Category</a>
+    </div>
+
+    <div class="product-container">
+        <div class="product-header">
+            <div>
+                <h2 class="product-title" th:text="${product.name}">Product Name</h2>
+                <p class="product-category" th:text="${'Category: ' + product.category.categoryName}">Category: Example</p>
+            </div>
+            <div class="product-price-container">
+                <p class="product-price" th:text="${'$' + product.price}">$0.00</p>
+                <p th:if="${product.discount != null && product.discount > 0}" class="product-discount" 
+                   th:text="${product.discount + '% off'}">0% off</p>
+            </div>
+        </div>
+
+        <div class="product-details">
+            <div class="product-description" th:text="${product.description}">
+                Product description goes here. This is a detailed description of the product.
+            </div>
+
+            <div class="product-info-section">
+                <h3 class="section-title">Availability</h3>
+                <p class="product-remains" th:classappend="${product.remains < 10 ? 'low' : ''}" 
+                   th:text="${'In stock: ' + product.remains + ' items'}">In stock: 0 items</p>
+                
+                <button class="add-to-cart-btn" th:disabled="${product.remains <= 0}">
+                    Add to Basket
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

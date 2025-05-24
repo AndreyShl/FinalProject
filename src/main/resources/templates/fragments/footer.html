@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+    <footer th:fragment="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>About Us</h3>
+                    <p>best coffee in world</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>Email: contact@gmail.com</p>
+                    <p>Phone: +1 234 567 890</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 My Application. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <style th:fragment="footerStyle">
+        .footer-container {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            margin-top: 30px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .footer-section {
+            flex: 1;
+            min-width: 200px;
+            margin-right: 20px;
+        }
+        
+        .footer-section h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #4CAF50;
+        }
+        
+        .social-links {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .social-link {
+            color: white;
+            text-decoration: none;
+            margin-bottom: 5px;
+            transition: color 0.3s;
+        }
+        
+        .social-link:hover {
+            color: #4CAF50;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid #555;
+            padding-top: 10px;
+            text-align: center;
+        }
+    </style>
+</body>
+</html>

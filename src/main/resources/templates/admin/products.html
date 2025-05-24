@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Manage Products</title>
+    <style th:replace="fragments/header :: headerStyle"></style>
+    <style th:replace="fragments/footer :: footerStyle"></style>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .main-content {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .admin-header {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-title {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .back-link {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .message-box {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            background-color: #e6f7e6;
+            color: #4CAF50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .message-box.error {
+            background-color: #ffebee;
+            color: #f44336;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: inherit;
+        }
+        
+        .content-container {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .products-list {
+            flex: 2;
+        }
+        
+        .product-form {
+            flex: 1;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .form-title {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: white;
+        }
+        
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #3e8e41;
+        }
+        
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .products-table th, 
+        .products-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .products-table th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .products-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .products-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .price {
+            font-weight: bold;
+        }
+        
+        .discount {
+            color: #f44336;
+        }
+        
+        .remains {
+            text-align: center;
+        }
+        
+        .remains.low {
+            color: #f44336;
+            font-weight: bold;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+            margin-right: 5px;
+            display: inline-block;
+        }
+        
+        .edit-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .edit-btn:hover {
+            background-color: #0b7dda;
+        }
+        
+        .description-cell {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="main-content">
+    <div class="admin-header">
+        <h1 class="admin-title">Manage Products</h1>
+        <a href="/admin" class="back-link">← Back to Dashboard</a>
+    </div>
+    
+    <div th:if="${message}" class="message-box">
+        <span th:text="${message}">Success message</span>
+        <button class="close-btn">&times;</button>
+    </div>
+    
+    <div class="content-container">
+        <div class="products-list">
+            <h2>Products</h2>
+            <table class="products-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Discount</th>
+                        <th>Remains</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="product : ${products}">
+                        <td th:text="${product.id}">1</td>
+                        <td th:text="${product.name}">Product Name</td>
+                        <td th:text="${product.category != null ? product.category.categoryName : 'None'}">Category</td>
+                        <td class="price" th:text="${'$' + product.price}">$0.00</td>
+                        <td class="discount" th:text="${product.discount != null ? product.discount + '%' : '0%'}">0%</td>
+                        <td class="remains" th:classappend="${product.remains < 10 ? 'low' : ''}" 
+                            th:text="${product.remains}">0</td>
+                        <td class="description-cell" th:text="${product.description}">Description</td>
+                        <td>
+                            <a th:href="@{/admin/products/edit/{id}(id=${product.id})}" class="action-btn edit-btn">Edit</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="product-form">
+            <h3 class="form-title">Create New Product</h3>
+            <form th:action="@{/admin/products/create}" method="post" th:object="${newProduct}">
+                <div class="form-group">
+                    <label for="name">Product Name</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="categoryId">Category</label>
+                    <select id="categoryId" name="categoryId" class="form-select" required>
+                        <option value="">Select Category</option>
+                        <option th:each="category : ${categories}" 
+                                th:value="${category.id}" 
+                                th:text="${category.categoryName}">Category Name</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="price">Price</label>
+                    <input type="number" id="price" name="price" class="form-control" step="0.01" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="discount">Discount (%)</label>
+                    <input type="number" id="discount" name="discount" class="form-control" step="0.01" min="0" max="100">
+                </div>
+                
+                <div class="form-group">
+                    <label for="remains">Remains (Quantity)</label>
+                    <input type="number" id="remains" name="remains" class="form-control" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" class="form-control" rows="4"></textarea>
+                </div>
+                
+                <button type="submit" class="btn">Create Product</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<script>
+    // Close message box when close button is clicked
+    document.addEventListener('DOMContentLoaded', function() {
+        const closeBtn = document.querySelector('.close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                this.parentElement.style.display = 'none';
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

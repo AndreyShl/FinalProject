@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+    <header th:fragment="header">
+        <div class="header-container">
+            <div class="logo">
+                <a href="/">My Coffee</a>
+            </div>
+            <nav class="main-nav">
+                <div class="dropdown">
+                    <button class="dropbtn">Menu</button>
+                    <div class="dropdown-content">
+                        <a href="/users">Home</a>
+                        <a href="/products/categories">Categories</a>
+                        <a th:if="${session.user == null}" href="/login">Login</a>
+                        <a th:if="${session.user == null}" href="/register">Register</a>
+                        <a th:if="${session.user != null}" href="/logout">Logout</a>
+                        <a th:if="${session.user != null}" href="/profile">Profile</a>
+                        <a th:if="${session.user != null && session.user.role == T(com.project.demo.model.entity.User.Role).ADMIN}" href="/admin">Admin Panel</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- CSS for Header -->
+    <style th:fragment="headerStyle">
+        .header-container {
+            background-color: #333;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .logo a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        /* Dropdown Menu Styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropbtn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 16px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.3s;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+            color: #4CAF50;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: #3e8e41;
+        }
+    </style>
+</body>
+</html>
