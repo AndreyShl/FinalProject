@@ -24,17 +24,13 @@ public class AdminController {
 
     @Autowired
     private ProductService productService;
-    
+
     @Autowired
     private AdminService adminService;
 
     // Admin dashboard
     @GetMapping
-    public String adminDashboard(Model model, HttpSession session) {
-        if (!adminService.isAdmin(session)) {
-            return "redirect:/login";
-        }
-
+    public String adminDashboard(Model model) {
         List<Category> categories = categoryService.getAllCategories();
         AdminService.AdminDashboardData dashboardData = adminService.getDashboardData();
 
@@ -46,11 +42,7 @@ public class AdminController {
 
     // Category management
     @GetMapping("/categories")
-    public String manageCategories(Model model, HttpSession session) {
-        if (!adminService.isAdmin(session)) {
-            return "redirect:/login";
-        }
-
+    public String manageCategories(Model model) {
         List<Category> categories = categoryService.getAllCategories();
 
         model.addAttribute("categories", categories);
@@ -61,12 +53,7 @@ public class AdminController {
 
     @PostMapping("/categories/create")
     public String createCategory(@ModelAttribute Category category, 
-                                HttpSession session, 
                                 RedirectAttributes redirectAttributes) {
-        if (!adminService.isAdmin(session)) {
-            return "redirect:/login";
-        }
-
         categoryService.createCategory(category);
         redirectAttributes.addFlashAttribute("message", "Category created successfully!");
 
@@ -75,17 +62,12 @@ public class AdminController {
 
     @GetMapping("/categories/edit/{id}")
     public String editCategoryForm(@PathVariable Integer id, 
-                                  Model model, 
-                                  HttpSession session) {
-        if (!adminService.isAdmin(session)) {
-            return "redirect:/login";
-        }
-
+                                  Model model) {
         Optional<Category> categoryOpt = categoryService.findCategoryById(id);
         if (categoryOpt.isEmpty()) {
             throw new IllegalArgumentException("Invalid category ID: " + id);
         }
-        
+
         model.addAttribute("category", categoryOpt.get());
 
         return "admin/edit-category";
@@ -93,12 +75,7 @@ public class AdminController {
 
     @PostMapping("/categories/update")
     public String updateCategory(@ModelAttribute Category category, 
-                                HttpSession session, 
                                 RedirectAttributes redirectAttributes) {
-        if (!adminService.isAdmin(session)) {
-            return "redirect:/login";
-        }
-
         categoryService.updateCategory(category);
         redirectAttributes.addFlashAttribute("message", "Category updated successfully!");
 
@@ -107,11 +84,7 @@ public class AdminController {
 
     // Product management
     @GetMapping("/products")
-    public String manageProducts(Model model, HttpSession session) {
-        if (!adminService.isAdmin(session)) {
-            return "redirect:/login";
-        }
-
+    public String manageProducts(Model model) {
         List<Product> products = productService.getAllProducts();
         List<Category> categories = categoryService.getAllCategories();
 
@@ -125,12 +98,7 @@ public class AdminController {
     @PostMapping("/products/create")
     public String createProduct(@ModelAttribute Product product, 
                                @RequestParam Integer categoryId,
-                               HttpSession session, 
                                RedirectAttributes redirectAttributes) {
-        if (!adminService.isAdmin(session)) {
-            return "redirect:/login";
-        }
-
         productService.createProduct(product, categoryId);
         redirectAttributes.addFlashAttribute("message", "Product created successfully!");
 
@@ -139,17 +107,12 @@ public class AdminController {
 
     @GetMapping("/products/edit/{id}")
     public String editProductForm(@PathVariable Integer id, 
-                                 Model model, 
-                                 HttpSession session) {
-        if (!adminService.isAdmin(session)) {
-            return "redirect:/login";
-        }
-
+                                 Model model) {
         Optional<Product> productOpt = productService.findProductById(id);
         if (productOpt.isEmpty()) {
             throw new IllegalArgumentException("Invalid product ID: " + id);
         }
-        
+
         List<Category> categories = categoryService.getAllCategories();
 
         model.addAttribute("product", productOpt.get());
@@ -161,12 +124,7 @@ public class AdminController {
     @PostMapping("/products/update")
     public String updateProduct(@ModelAttribute Product product, 
                                @RequestParam Integer categoryId,
-                               HttpSession session, 
                                RedirectAttributes redirectAttributes) {
-        if (!adminService.isAdmin(session)) {
-            return "redirect:/login";
-        }
-
         productService.updateProduct(product, categoryId);
         redirectAttributes.addFlashAttribute("message", "Product updated successfully!");
 

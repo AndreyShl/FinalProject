@@ -13,10 +13,11 @@ public interface OrdersRepository extends BaseRepository<Order, Integer> {
     
 
     List<Order> findByUser(User user);
-    
 
-    List<Order> findByProduct(Product product);
-    
+
+    List<Order> findByProductOrders_Product(Product product);
+
+
 
     List<Order> findByOrderStatus(String orderStatus);
     

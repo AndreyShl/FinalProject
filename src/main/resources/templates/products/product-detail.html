@@ -160,6 +160,11 @@
     </div>
 
     <div class="product-container">
+        <!-- Error message display -->
+        <div th:if="${errorMessage}" class="error-message" style="background-color: #ffebee; color: #c62828; padding: 10px; margin-bottom: 15px; border-radius: 4px; border-left: 4px solid #c62828;">
+            <p th:text="${errorMessage}" style="margin: 0; font-weight: bold;">Error message</p>
+        </div>
+
         <div class="product-header">
             <div>
                 <h2 class="product-title" th:text="${product.name}">Product Name</h2>
@@ -181,10 +186,13 @@
                 <h3 class="section-title">Availability</h3>
                 <p class="product-remains" th:classappend="${product.remains < 10 ? 'low' : ''}" 
                    th:text="${'In stock: ' + product.remains + ' items'}">In stock: 0 items</p>
-                
-                <button class="add-to-cart-btn" th:disabled="${product.remains <= 0}">
-                    Add to Basket
-                </button>
+
+                <form th:action="@{/basket/add/{id}(id=${product.id})}" method="post">
+                    <input type="hidden" name="amount" value="1">
+                    <button type="submit" class="add-to-cart-btn" th:disabled="${product.remains <= 0}">
+                        Add to Basket
+                    </button>
+                </form>
             </div>
         </div>
     </div>

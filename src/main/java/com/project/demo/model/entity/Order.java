@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -18,13 +20,26 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
+    // Remove direct relationship with Product
+    // Instead, use the products_orders table for the many-to-many relationship
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductOrder> productOrders;
 
     @Column(name = "price")
     private BigDecimal price;
 
     @Column(name = "order_status")
     private String orderStatus;
+
+    @Column(name = "payment_method")
+    private String paymentMethod;
+
+    @Column(name = "created_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = new Date();
+    }
 }

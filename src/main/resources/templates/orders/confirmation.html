@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Order Confirmation</title>
+    <!-- Include header styles -->
+    <style th:replace="fragments/header :: headerStyle"></style>
+    <!-- Include footer styles -->
+    <style th:replace="fragments/footer :: footerStyle"></style>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .confirmation-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .confirmation-icon {
+            color: #4CAF50;
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        .confirmation-message {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .confirmation-details {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .action-buttons {
+            margin-top: 30px;
+        }
+        .action-button {
+            display: inline-block;
+            margin: 0 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .action-button.secondary {
+            background-color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="main-content">
+    <div class="confirmation-container">
+
+        <h1 class="confirmation-message">Order Placed Successfully!</h1>
+        <p class="confirmation-details">Thank you for your order. Your order has been received and is being processed.</p>
+        
+        <div class="action-buttons">
+            <a href="/products/categories" class="action-button secondary">Continue Shopping</a>
+            <a href="/users" class="action-button">Go to Home</a>
+        </div>
+    </div>
+</div>
+
+<!-- Include footer -->
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

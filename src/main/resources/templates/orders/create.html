@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Order</title>
+    <!-- Include header styles -->
+    <style th:replace="fragments/header :: headerStyle"></style>
+    <!-- Include footer styles -->
+    <style th:replace="fragments/footer :: footerStyle"></style>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .order-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .total-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .payment-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .payment-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="main-content">
+    <h1>Create Order</h1>
+
+    <div class="order-container">
+        <h2>Order Summary</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${basketItems}">
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div style="margin-left: 10px;">
+                                <a th:href="@{/products/{id}(id=${item.product.id})}" th:text="${item.product.name}">Product Name</a>
+                                <p th:if="${item.product.description}" th:text="${#strings.abbreviate(item.product.description, 50)}">Description</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td th:text="${item.product.price}">$0.00</td>
+                    <td th:text="${item.amount}">1</td>
+                    <td th:text="${item.product.price.multiply(item.amount)}">$0.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="total-section">
+            <span>Total: </span>
+            <span th:text="${total}">$0.00</span>
+        </div>
+
+        <div class="payment-section">
+            <h2>Payment Method</h2>
+            <form th:action="@{/orders/create}" method="post">
+                <div class="form-group">
+                    <label for="paymentMethod">Select Payment Method:</label>
+                    <select id="paymentMethod" name="paymentMethod" required>
+                        <option value="">-- Select Payment Method --</option>
+                        <option th:each="method : ${paymentMethods}" th:value="${method}" th:text="${method}">Payment Method</option>
+                    </select>
+                </div>
+                <button type="submit">Place Order</button>
+            </form>
+        </div>
+    </div>
+
+    <a href="/basket" class="back-link">Back to Basket</a>
+</div>
+
+<!-- Include footer -->
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

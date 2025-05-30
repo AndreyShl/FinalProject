@@ -46,21 +46,17 @@ CREATE TABLE `shop`.`products_orders` (
                                           `user_id` INT NOT NULL,
                                           `product_id` INT NOT NULL,
                                           `order_id` INT NOT NULL,
+                                          `quantity` DECIMAL(10,2) NULL,
+                                          `price` DECIMAL(10,2) NULL,
                                           PRIMARY KEY (`ID`));
--- CREATE TABLE `shop`.`history` (
---                                   `ID` INT NOT NULL AUTO_INCREMENT,
---                                   `user_id` INT NOT NULL,
---                                   `product_id` INT NOT NULL,
---                                   `amount` DECIMAL(10,2) NOT NULL,
---                                   PRIMARY KEY (`ID`));
+
 alter table orders add constraint FOREIGN KEY (user_id) REFERENCES users(ID);
 alter table orders add constraint FOREIGN KEY (product_id) REFERENCES products(ID);
 alter table products_orders add constraint FOREIGN KEY (user_id) REFERENCES users(ID);
 alter table products_orders add constraint FOREIGN KEY (product_id) REFERENCES products(ID);
 alter table products_orders add constraint FOREIGN KEY (order_id) REFERENCES orders(ID);
 
--- alter table history add constraint FOREIGN KEY (user_id) REFERENCES users(ID)
--- alter table history add constraint FOREIGN KEY (product_id) REFERENCES products(ID)
+
 alter table basket add constraint FOREIGN KEY (user_id) REFERENCES users(ID);
 alter table basket add constraint FOREIGN KEY (product_id) REFERENCES products(ID);
 alter table favourites add constraint FOREIGN KEY (user_id) REFERENCES users(ID);
@@ -86,3 +82,12 @@ ALTER TABLE `shop`.`users`
     ADD COLUMN `status` VARCHAR(45) NULL DEFAULT 'ACTIVE' AFTER `balance`;
 ALTER TABLE `shop`.`category`
     CHANGE COLUMN `status` `status` VARCHAR(255) NULL DEFAULT 'ACTIVE' ;
+
+ALTER TABLE users MODIFY COLUMN password VARCHAR(512);
+
+ALTER TABLE `shop`.`orders`
+    ADD COLUMN `payment_method` VARCHAR(255) NULL AFTER `order_status`,
+    ADD COLUMN `created_at` TIMESTAMP NULL AFTER `payment_method`;
+
+-- Make product_id nullable since we're using products_orders for the many-to-many relationship
+ALTER TABLE `shop`.`orders` MODIFY COLUMN `product_id` INT NULL;
