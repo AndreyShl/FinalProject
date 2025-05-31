@@ -56,10 +56,22 @@ public class OrderController {
 
         BigDecimal total = basketService.calculateBasketTotal(user);
 
+        // Create payment methods list
+        List<String> paymentMethods = new java.util.ArrayList<>(List.of("Credit Card", "PayPal", "Cash on Delivery"));
+
+        // Check if user has a linked card and add it to payment methods
+        if (userService.hasPaymentCard(user)) {
+            String lastFourDigits = user.getCardNumber().substring(user.getCardNumber().length() - 4);
+            String cardOption = "My Card (**** **** **** " + lastFourDigits + ")";
+            // Add at the beginning of the list
+            paymentMethods.add(0, cardOption);
+        }
+
         // Add data to model
         model.addAttribute("basketItems", basketItems);
         model.addAttribute("total", total);
-        model.addAttribute("paymentMethods", List.of("Credit Card", "PayPal", "Cash on Delivery"));
+        model.addAttribute("paymentMethods", paymentMethods);
+        model.addAttribute("user", user);
 
         return "orders/create";
     }

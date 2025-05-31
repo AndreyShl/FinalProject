@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Profile</title>
+    <!-- Include header styles -->
+    <style th:replace="fragments/header :: headerStyle"></style>
+    <!-- Include footer styles -->
+    <style th:replace="fragments/footer :: footerStyle"></style>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .profile-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .profile-info {
+            margin-bottom: 30px;
+        }
+        .profile-info p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .profile-info strong {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        .balance-section, .card-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.danger {
+            background-color: #f44336;
+        }
+        button.danger:hover {
+            background-color: #d32f2f;
+        }
+        .card-info {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .card-info p {
+            margin: 5px 0;
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .alert-success {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+        .alert-danger {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="main-content">
+    <h1>Профиль пользователя</h1>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <div class="profile-container">
+        <div class="profile-info">
+            <h2>Информация о пользователе</h2>
+            <p><strong>Имя пользователя:</strong> <span th:text="${session.user.username}">Username</span></p>
+            <p><strong>Логин:</strong> <span th:text="${session.user.login}">Login</span></p>
+            <p><strong>Телефон:</strong> <span th:text="${session.user.phoneNumber}">Phone Number</span></p>
+            <p><strong>Баланс:</strong> <span th:text="${session.user.balance}">0.00</span></p>
+        </div>
+
+        <div class="balance-section">
+            <h2>Пополнение баланса</h2>
+            <form th:action="@{/profile/topup}" method="post">
+                <div class="form-group">
+                    <label for="amount">Сумма пополнения:</label>
+                    <input type="number" id="amount" name="amount" min="0.01" step="0.01" required>
+                </div>
+                <button type="submit">Пополнить баланс</button>
+            </form>
+        </div>
+
+        <div class="card-section">
+            <h2>Платежная карта</h2>
+            
+            <div th:if="${hasCard}">
+                <div class="card-info">
+                    <p><strong>Номер карты:</strong> <span th:text="${'**** **** **** ' + #strings.substring(session.user.cardNumber, #strings.length(session.user.cardNumber) - 4, #strings.length(session.user.cardNumber))}">**** **** **** 1234</span></p>
+                    <p><strong>Владелец карты:</strong> <span th:text="${session.user.cardHolder}">Card Holder</span></p>
+                    <p><strong>Срок действия:</strong> <span th:text="${session.user.cardExpiry}">MM/YY</span></p>
+                </div>
+                <form th:action="@{/profile/removeCard}" method="post">
+                    <button type="submit" class="danger">Удалить карту</button>
+                </form>
+            </div>
+            
+            <div th:unless="${hasCard}">
+                <p>У вас нет привязанной карты. Добавьте карту для быстрой оплаты заказов.</p>
+                <form th:action="@{/profile/addCard}" method="post">
+                    <div class="form-group">
+                        <label for="cardNumber">Номер карты:</label>
+                        <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cardHolder">Владелец карты:</label>
+                        <input type="text" id="cardHolder" name="cardHolder" placeholder="IVAN IVANOV" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cardExpiry">Срок действия:</label>
+                        <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cardCvv">CVV:</label>
+                        <input type="text" id="cardCvv" name="cardCvv" placeholder="123" required>
+                    </div>
+                    <button type="submit">Добавить карту</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include footer -->
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

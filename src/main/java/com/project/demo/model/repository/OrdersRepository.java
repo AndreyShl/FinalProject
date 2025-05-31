@@ -3,13 +3,14 @@ package com.project.demo.model.repository;
 import com.project.demo.model.entity.Order;
 import com.project.demo.model.entity.Product;
 import com.project.demo.model.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 
 @Repository
-public interface OrdersRepository extends BaseRepository<Order, Integer> {
+public interface OrdersRepository extends JpaRepository<Order, Integer> {
     
 
     List<Order> findByUser(User user);

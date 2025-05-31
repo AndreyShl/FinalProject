@@ -22,7 +22,7 @@ public class PasswordEncoderInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         List<User> users = usersRepository.findAll();
 
-        // Encode existing passwords
+        // Encode existing passwords for all users
         for (User user : users) {
             // Check if the password is not already encoded
             if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {

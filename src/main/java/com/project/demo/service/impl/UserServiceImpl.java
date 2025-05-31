@@ -72,4 +72,55 @@ public class UserServiceImpl implements UserService {
         }
         return usersRepository.save(user);
     }
+
+    @Override
+    public User topUpBalance(User user, BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero");
+        }
+
+        BigDecimal newBalance = user.getBalance().add(amount);
+        user.setBalance(newBalance);
+        return usersRepository.save(user);
+    }
+
+    @Override
+    public User linkPaymentCard(User user, String cardNumber, String cardHolder, String cardExpiry, String cardCvv) {
+        // Basic validation
+        if (cardNumber == null || cardNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("Card number is required");
+        }
+        if (cardHolder == null || cardHolder.trim().isEmpty()) {
+            throw new IllegalArgumentException("Card holder name is required");
+        }
+        if (cardExpiry == null || cardExpiry.trim().isEmpty()) {
+            throw new IllegalArgumentException("Card expiry date is required");
+        }
+        if (cardCvv == null || cardCvv.trim().isEmpty()) {
+            throw new IllegalArgumentException("Card CVV is required");
+        }
+
+        // Set card details
+        user.setCardNumber(cardNumber);
+        user.setCardHolder(cardHolder);
+        user.setCardExpiry(cardExpiry);
+        user.setCardCvv(cardCvv);
+
+        return usersRepository.save(user);
+    }
+
+    @Override
+    public User removePaymentCard(User user) {
+        user.setCardNumber(null);
+        user.setCardHolder(null);
+        user.setCardExpiry(null);
+        user.setCardCvv(null);
+
+        return usersRepository.save(user);
+    }
+
+    @Override
+    public boolean hasPaymentCard(User user) {
+        return user.getCardNumber() != null && !user.getCardNumber().trim().isEmpty();
+    }
 }

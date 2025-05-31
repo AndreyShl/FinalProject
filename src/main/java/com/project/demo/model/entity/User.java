@@ -36,6 +36,18 @@ public class User {
     @Column(name = "status")
     private String status;
 
+    @Column(name = "card_number")
+    private String cardNumber;
+
+    @Column(name = "card_holder")
+    private String cardHolder;
+
+    @Column(name = "card_expiry")
+    private String cardExpiry;
+
+    @Column(name = "card_cvv")
+    private String cardCvv;
+
     public enum Role {
         ADMIN,
         USER
