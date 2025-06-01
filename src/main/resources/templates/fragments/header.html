@@ -11,6 +11,10 @@
             <div class="logo">
                 <a href="/">My Coffee</a>
             </div>
+            <div class="user-balance" sec:authorize="isAuthenticated()">
+                <span>Баланс: </span>
+                <span th:text="${session.user != null ? session.user.balance + '$' : '0.00$'}" class="balance-amount">0.00$</span>
+            </div>
             <nav class="main-nav">
                 <div class="dropdown">
                     <button class="dropbtn">Menu</button>
@@ -51,6 +55,23 @@
             text-decoration: none;
             font-size: 1.5em;
             font-weight: bold;
+        }
+
+        .user-balance {
+            color: white;
+            font-size: 1.1em;
+            margin: 0 20px;
+            padding: 5px 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .balance-amount {
+            font-weight: bold;
+            color: #4CAF50;
+            margin-left: 5px;
         }
 
         /* Dropdown Menu Styles */

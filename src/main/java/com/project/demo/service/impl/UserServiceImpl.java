@@ -123,4 +123,21 @@ public class UserServiceImpl implements UserService {
     public boolean hasPaymentCard(User user) {
         return user.getCardNumber() != null && !user.getCardNumber().trim().isEmpty();
     }
+
+    @Override
+    public User deductFromBalance(User user, BigDecimal amount) throws InsufficientBalanceException {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero");
+        }
+
+        // Проверяем, достаточно ли средств на балансе
+        if (user.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientBalanceException("Insufficient balance. Current balance: " + user.getBalance() + ", Required: " + amount);
+        }
+
+        // Списываем средства с баланса
+        BigDecimal newBalance = user.getBalance().subtract(amount);
+        user.setBalance(newBalance);
+        return usersRepository.save(user);
+    }
 }

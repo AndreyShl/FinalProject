@@ -128,7 +128,7 @@
                                 <span th:text="'(x' + ${productOrder.quantity} + ')'">Quantity</span>
                             </div>
                         </td>
-                        <td th:text="${order.price}">$0.00</td>
+                        <td th:text="'-' + ${order.price} + '$'">-$0.00</td>
                         <td th:text="${order.paymentMethod}">Credit Card</td>
                         <td>
                             <span th:class="'status-badge status-' + ${#strings.toLowerCase(order.orderStatus)}"

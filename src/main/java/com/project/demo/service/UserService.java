@@ -20,9 +20,17 @@ public interface UserService {
 
     User topUpBalance(User user, BigDecimal amount);
 
+    User deductFromBalance(User user, BigDecimal amount) throws InsufficientBalanceException;
+
     User linkPaymentCard(User user, String cardNumber, String cardHolder, String cardExpiry, String cardCvv);
 
     User removePaymentCard(User user);
 
     boolean hasPaymentCard(User user);
+
+    class InsufficientBalanceException extends Exception {
+        public InsufficientBalanceException(String message) {
+            super(message);
+        }
+    }
 }

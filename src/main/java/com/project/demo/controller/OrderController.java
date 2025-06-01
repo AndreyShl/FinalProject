@@ -77,7 +77,7 @@ public class OrderController {
     }
 
     @PostMapping("/create")
-    public String createOrder(@RequestParam("paymentMethod") String paymentMethod, HttpSession session) {
+    public String createOrder(@RequestParam("paymentMethod") String paymentMethod, HttpSession session, Model model) {
         // Get the authenticated user from Spring Security
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -96,49 +96,61 @@ public class OrderController {
             return "redirect:/basket";
         }
 
-        // Create a single order for all basket items
-        Order order = new Order();
-        order.setUser(user);
-        order.setOrderStatus("PENDING");
-        order.setPaymentMethod(paymentMethod);
-
         // Calculate total price for the order
         BigDecimal totalPrice = BigDecimal.ZERO;
         for (Basket basketItem : basketItems) {
             totalPrice = totalPrice.add(basketItem.getProduct().getPrice().multiply(basketItem.getAmount()));
         }
-        order.setPrice(totalPrice);
 
-        // Initialize the productOrders list
-        order.setProductOrders(new ArrayList<>());
+        try {
+            // Списываем средства с баланса пользователя
+            user = userService.deductFromBalance(user, totalPrice);
 
-        // Save the order to get an ID
-        order = ordersRepository.save(order);
+            // Create a single order for all basket items
+            Order order = new Order();
+            order.setUser(user);
+            order.setOrderStatus("PENDING");
+            order.setPaymentMethod(paymentMethod);
+            order.setPrice(totalPrice);
 
-        // Create ProductOrder entries for each basket item
-        for (Basket basketItem : basketItems) {
-            ProductOrder productOrder = new ProductOrder();
-            productOrder.setUser(user);
-            productOrder.setProduct(basketItem.getProduct());
-            productOrder.setOrder(order);
-            productOrder.setQuantity(basketItem.getAmount());
-            productOrder.setPrice(basketItem.getProduct().getPrice().multiply(basketItem.getAmount()));
+            // Initialize the productOrders list
+            order.setProductOrders(new ArrayList<>());
 
-            // Save the product order
-            productOrderRepository.save(productOrder);
+            // Save the order to get an ID
+            order = ordersRepository.save(order);
 
-            // Add to the order's list of product orders
-            order.getProductOrders().add(productOrder);
+            // Create ProductOrder entries for each basket item
+            for (Basket basketItem : basketItems) {
+                ProductOrder productOrder = new ProductOrder();
+                productOrder.setUser(user);
+                productOrder.setProduct(basketItem.getProduct());
+                productOrder.setOrder(order);
+                productOrder.setQuantity(basketItem.getAmount());
+                productOrder.setPrice(basketItem.getProduct().getPrice().multiply(basketItem.getAmount()));
 
-            // Remove the item from the basket
-            basketService.removeProductFromBasket(user, basketItem.getProduct());
+                // Save the product order
+                productOrderRepository.save(productOrder);
+
+                // Add to the order's list of product orders
+                order.getProductOrders().add(productOrder);
+
+                // Remove the item from the basket
+                basketService.removeProductFromBasket(user, basketItem.getProduct());
+            }
+
+            // Update the order with the product orders
+            ordersRepository.save(order);
+
+            // Redirect to a confirmation page
+            return "redirect:/orders/confirmation";
+
+        } catch (UserService.InsufficientBalanceException e) {
+            // Если на балансе недостаточно средств, возвращаем пользователя на страницу корзины с сообщением об ошибке
+            model.addAttribute("basketItems", basketItems);
+            model.addAttribute("total", totalPrice);
+            model.addAttribute("errorMessage", "Недостаточно средств на балансе. Текущий баланс: " + user.getBalance() + ", Требуется: " + totalPrice);
+            return "products/basket";
         }
-
-        // Update the order with the product orders
-        ordersRepository.save(order);
-
-        // Redirect to a confirmation page
-        return "redirect:/orders/confirmation";
     }
 
     @GetMapping("/confirmation")
