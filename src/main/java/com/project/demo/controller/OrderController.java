@@ -225,6 +225,14 @@ public class OrderController {
             return "redirect:/orders";
         }
 
+        // Check if the order is in "SHIPPED" or "DELIVERED" status
+        if ("SHIPPED".equals(order.getOrderStatus()) || "DELIVERED".equals(order.getOrderStatus())) {
+            // If so, only allow deletion if the user has ADMIN role
+            if (user.getRole() != User.Role.ADMIN) {
+                return "redirect:/orders";
+            }
+        }
+
         // Update the order status to "DELETED" instead of actually deleting it
         order.setOrderStatus("DELETED");
         ordersRepository.save(order);

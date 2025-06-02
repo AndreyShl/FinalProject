@@ -1,18 +1,33 @@
 package com.project.demo.controller;
 
 import com.project.demo.model.entity.Category;
+import com.project.demo.model.entity.Order;
 import com.project.demo.model.entity.Product;
+import com.project.demo.model.entity.ProductImage;
+import com.project.demo.model.repository.OrdersRepository;
+import com.project.demo.model.repository.ProductOrderRepository;
 import com.project.demo.service.AdminService;
 import com.project.demo.service.CategoryService;
+import com.project.demo.service.ProductImageService;
 import com.project.demo.service.ProductService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -27,6 +42,15 @@ public class AdminController {
 
     @Autowired
     private AdminService adminService;
+
+    @Autowired
+    private OrdersRepository ordersRepository;
+
+    @Autowired
+    private ProductOrderRepository productOrderRepository;
+
+    @Autowired
+    private ProductImageService productImageService;
 
     // Admin dashboard
     @GetMapping
@@ -98,9 +122,21 @@ public class AdminController {
     @PostMapping("/products/create")
     public String createProduct(@ModelAttribute Product product, 
                                @RequestParam Integer categoryId,
+                               @RequestParam(value = "images", required = false) MultipartFile[] images,
                                RedirectAttributes redirectAttributes) {
-        productService.createProduct(product, categoryId);
-        redirectAttributes.addFlashAttribute("message", "Product created successfully!");
+        try {
+            // Create the product
+            Product savedProduct = productService.createProduct(product, categoryId);
+
+            // Save images if provided
+            if (images != null && images.length > 0) {
+                productImageService.saveProductImages(savedProduct, images);
+            }
+
+            redirectAttributes.addFlashAttribute("message", "Product created successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error creating product: " + e.getMessage());
+        }
 
         return "redirect:/admin/products";
     }
@@ -124,10 +160,111 @@ public class AdminController {
     @PostMapping("/products/update")
     public String updateProduct(@ModelAttribute Product product, 
                                @RequestParam Integer categoryId,
+                               @RequestParam(value = "newImages", required = false) MultipartFile[] newImages,
                                RedirectAttributes redirectAttributes) {
-        productService.updateProduct(product, categoryId);
-        redirectAttributes.addFlashAttribute("message", "Product updated successfully!");
+        try {
+            // Update the product
+            Product updatedProduct = productService.updateProduct(product, categoryId);
+
+            // Save new images if provided
+            if (newImages != null && newImages.length > 0) {
+                productImageService.saveProductImages(updatedProduct, newImages);
+            }
+
+            redirectAttributes.addFlashAttribute("message", "Product updated successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error updating product: " + e.getMessage());
+        }
 
         return "redirect:/admin/products";
+    }
+
+    // Order management
+    @GetMapping("/orders")
+    public String manageOrders(Model model, 
+                              @RequestParam(defaultValue = "createdAt") String sortBy,
+                              @RequestParam(defaultValue = "desc") String sortDir) {
+        // Create sort object based on parameters
+        Sort sort = Sort.by(sortDir.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
+
+        // Get all orders with sorting
+        List<Order> orders = ordersRepository.findAll(sort);
+
+        // For each order, ensure the productOrders are loaded
+        for (Order order : orders) {
+            if (order.getProductOrders() == null || order.getProductOrders().isEmpty()) {
+                order.setProductOrders(productOrderRepository.findByOrder(order));
+            }
+        }
+
+        // Add orders to the model
+        model.addAttribute("orders", orders);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortDir", sortDir);
+
+        // Define order status descriptions for display
+        model.addAttribute("statusDescriptions", Map.of(
+            "PENDING", "In Assembly",
+            "SHIPPED", "In Delivery",
+            "DELIVERED", "Delivered",
+            "DELETED", "Deleted"
+        ));
+
+        return "admin/orders";
+    }
+
+    @PostMapping("/orders/update-status/{id}")
+    public String updateOrderStatus(@PathVariable Integer id,
+                                   @RequestParam String status,
+                                   RedirectAttributes redirectAttributes) {
+        // Find the order by ID
+        Optional<Order> orderOpt = ordersRepository.findById(id);
+        if (orderOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Order not found");
+            return "redirect:/admin/orders";
+        }
+
+        // Update the order status
+        Order order = orderOpt.get();
+        order.setOrderStatus(status);
+        ordersRepository.save(order);
+
+        redirectAttributes.addFlashAttribute("message", "Order status updated successfully!");
+
+        return "redirect:/admin/orders";
+    }
+
+    // Product Image Management
+
+    @PostMapping("/products/images/{imageId}/delete")
+    @ResponseBody
+    public Map<String, Boolean> deleteProductImage(@PathVariable Integer imageId) {
+        boolean success = productImageService.deleteProductImage(imageId);
+        return Map.of("success", success);
+    }
+
+    @PostMapping("/products/images/{imageId}/set-main")
+    @ResponseBody
+    public Map<String, Boolean> setMainProductImage(@PathVariable Integer imageId) {
+        boolean success = productImageService.setMainProductImage(imageId);
+        return Map.of("success", success);
+    }
+
+    @GetMapping("/products/images/{imageId}")
+    public ResponseEntity<byte[]> getProductImage(@PathVariable Integer imageId) {
+        try {
+            ProductImage image = productImageService.getProductImage(imageId);
+            if (image != null) {
+                Path imagePath = Paths.get(image.getImagePath());
+                byte[] imageBytes = Files.readAllBytes(imagePath);
+
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(imageBytes);
+            }
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

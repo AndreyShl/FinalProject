@@ -2,18 +2,27 @@ package com.project.demo.controller;
 
 import com.project.demo.model.entity.Category;
 import com.project.demo.model.entity.Product;
+import com.project.demo.model.entity.ProductImage;
 import com.project.demo.model.entity.User;
 import com.project.demo.service.BasketService;
 import com.project.demo.service.CategoryService;
+import com.project.demo.service.ProductImageService;
 import com.project.demo.service.ProductService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +38,9 @@ public class ProductController {
 
     @Autowired
     private BasketService basketService;
+
+    @Autowired
+    private ProductImageService productImageService;
 
     @GetMapping
     public String getProducts() {
@@ -73,5 +85,23 @@ public class ProductController {
 
         model.addAttribute("product", productOpt.get());
         return "products/product-detail";
+    }
+
+    @GetMapping("/images/{imageId}")
+    public ResponseEntity<byte[]> getProductImage(@PathVariable Integer imageId) {
+        try {
+            ProductImage image = productImageService.getProductImage(imageId);
+            if (image != null) {
+                Path imagePath = Paths.get(image.getImagePath());
+                byte[] imageBytes = Files.readAllBytes(imagePath);
+
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(imageBytes);
+            }
+            return ResponseEntity.notFound().build();
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }
