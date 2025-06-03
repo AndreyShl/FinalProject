@@ -8,6 +8,8 @@ import com.project.demo.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,5 +57,24 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid category ID: " + categoryId));
         product.setCategory(category);
         return productsRepository.save(product);
+    }
+
+    @Override
+    public BigDecimal calculateDiscountedPrice(Product product) {
+        if (product.getDiscount() == null || product.getDiscount().compareTo(BigDecimal.ZERO) <= 0) {
+            return product.getPrice();
+        }
+
+        // Calculate discount amount
+        BigDecimal discountPercentage = product.getDiscount().divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
+        BigDecimal discountAmount = product.getPrice().multiply(discountPercentage);
+
+        // Calculate discounted price
+        return product.getPrice().subtract(discountAmount).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    @Override
+    public List<Product> searchProductsByName(String query) {
+        return productsRepository.findByNameContaining(query);
     }
 }

@@ -56,8 +56,10 @@ public class BasketController {
         List<Basket> basketItems = basketService.getBasketItemsByUser(user);
         BigDecimal total = basketService.calculateBasketTotal(user);
 
+        // Create a map of product IDs to discounted prices
         model.addAttribute("basketItems", basketItems);
         model.addAttribute("total", total);
+        model.addAttribute("productService", productService); // Pass the productService to the template
 
         return "products/basket";
     }

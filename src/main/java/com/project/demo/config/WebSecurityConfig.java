@@ -22,12 +22,12 @@ public class WebSecurityConfig {
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/users")
+                .defaultSuccessUrl("/")
                 .permitAll()
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/users")
+                .logoutSuccessUrl("/")
                 .permitAll()
             )
             .sessionManagement(session -> session

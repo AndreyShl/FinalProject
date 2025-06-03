@@ -128,9 +128,27 @@
                             </div>
                         </div>
                     </td>
-                    <td th:text="${item.product.price}">$0.00</td>
+                    <!-- Show original price with strikethrough if there's a discount -->
+                    <td>
+                        <div th:if="${item.product.discount != null && item.product.discount > 0}">
+                            <span style="text-decoration: line-through; color: #999;" th:text="${item.product.price}">$0.00</span>
+                            <span style="color: #4CAF50; font-weight: bold;" th:text="${productService.calculateDiscountedPrice(item.product)}">$0.00</span>
+                            <span style="color: #f44336; font-size: 0.8em;" th:text="${'(' + item.product.discount + '% off)'}">0% off</span>
+                        </div>
+                        <!-- Show regular price if no discount -->
+                        <div th:unless="${item.product.discount != null && item.product.discount > 0}">
+                            <span th:text="${item.product.price}">$0.00</span>
+                        </div>
+                    </td>
                     <td th:text="${item.amount}">1</td>
-                    <td th:text="${item.product.price.multiply(item.amount)}">$0.00</td>
+                    <!-- Calculate total with discounted price if there's a discount -->
+                    <td>
+                        <span th:if="${item.product.discount != null && item.product.discount > 0}" 
+                              th:text="${productService.calculateDiscountedPrice(item.product).multiply(item.amount)}">$0.00</span>
+                        <!-- Calculate total with regular price if no discount -->
+                        <span th:unless="${item.product.discount != null && item.product.discount > 0}" 
+                              th:text="${item.product.price.multiply(item.amount)}">$0.00</span>
+                    </td>
                 </tr>
             </tbody>
         </table>

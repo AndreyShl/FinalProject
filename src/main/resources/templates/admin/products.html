@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" >
 <head>
     <title>Manage Products</title>
     <style th:replace="fragments/header :: headerStyle"></style>
@@ -260,47 +260,93 @@
 
         <div class="product-form">
             <h3 class="form-title">Create New Product</h3>
+<!--            <form th:action="@{/admin/products/create}" method="post" th:object="${newProduct}" enctype="multipart/form-data">-->
+<!--                <div class="form-group">-->
+<!--                    <label for="name">Product Name</label>-->
+<!--                    <input type="text" id="name" name="name" class="form-control" required>-->
+<!--                </div>-->
+
+<!--                <div class="form-group">-->
+<!--                    <label for="categoryId">Category</label>-->
+<!--                    <select id="categoryId" name="categoryId" class="form-select" required>-->
+<!--                        <option value="">Select Category</option>-->
+<!--                        <option th:each="category : ${categories}" -->
+<!--                                th:value="${category.id}" -->
+<!--                                th:text="${category.categoryName}">Category Name</option>-->
+<!--                    </select>-->
+<!--                </div>-->
+
+<!--                <div class="form-group">-->
+<!--                    <label for="price">Price</label>-->
+<!--                    <input type="number" id="price" name="price" class="form-control" step="0.01" min="0" required>-->
+<!--                </div>-->
+
+<!--                <div class="form-group">-->
+<!--                    <label for="discount">Discount (%)</label>-->
+<!--                    <input type="number" id="discount" name="discount" class="form-control" step="0.01" min="0" max="100">-->
+<!--                </div>-->
+
+<!--                <div class="form-group">-->
+<!--                    <label for="remains">Remains (Quantity)</label>-->
+<!--                    <input type="number" id="remains" name="remains" class="form-control" min="0" required>-->
+<!--                </div>-->
+
+<!--                <div class="form-group">-->
+<!--                    <label for="description">Description</label>-->
+<!--                    <textarea id="description" name="description" class="form-control" rows="4"></textarea>-->
+<!--                </div>-->
+
+<!--                <div class="form-group">-->
+<!--                    <label for="images">Product Images</label>-->
+<!--                    <input type="file" id="images" name="images" class="form-control" multiple accept="image/*">-->
+<!--                    <small class="form-text text-muted">You can select multiple images. The first image will be used as the main image.</small>-->
+<!--                </div>-->
+
+<!--                <button type="submit" class="btn">Create Product</button>-->
+<!--            </form>-->
             <form th:action="@{/admin/products/create}" method="post" th:object="${newProduct}" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="name">Product Name</label>
-                    <input type="text" id="name" name="name" class="form-control" required>
+                    <input type="text" id="name" th:field="*{name}" class="form-control" required>
                 </div>
 
                 <div class="form-group">
                     <label for="categoryId">Category</label>
                     <select id="categoryId" name="categoryId" class="form-select" required>
                         <option value="">Select Category</option>
-                        <option th:each="category : ${categories}" 
-                                th:value="${category.id}" 
+                        <option th:each="category : ${categories}"
+                                th:value="${category.id}"
                                 th:text="${category.categoryName}">Category Name</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="price">Price</label>
-                    <input type="number" id="price" name="price" class="form-control" step="0.01" min="0" required>
+                    <input type="number" id="price" th:field="*{price}" class="form-control" step="0.01" min="0" required>
                 </div>
 
                 <div class="form-group">
                     <label for="discount">Discount (%)</label>
-                    <input type="number" id="discount" name="discount" class="form-control" step="0.01" min="0" max="100">
+                    <input type="number" id="discount" th:field="*{discount}" class="form-control" step="0.01" min="0" max="100">
                 </div>
 
                 <div class="form-group">
                     <label for="remains">Remains (Quantity)</label>
-                    <input type="number" id="remains" name="remains" class="form-control" min="0" required>
+                    <input type="number" id="remains" th:field="*{remains}" class="form-control" min="0" required>
                 </div>
 
                 <div class="form-group">
                     <label for="description">Description</label>
-                    <textarea id="description" name="description" class="form-control" rows="4"></textarea>
+                    <textarea id="description" th:field="*{description}" class="form-control" rows="4"></textarea>
                 </div>
 
+                <!-- Temporarily commented out for image-related issues
                 <div class="form-group">
-                    <label for="images">Product Images</label>
-                    <input type="file" id="images" name="images" class="form-control" multiple accept="image/*">
+                    <label for="imageFiles">Product Images</label>
+                    <input type="file" id="imageFiles" name="images" class="form-control" multiple accept="image/*">
                     <small class="form-text text-muted">You can select multiple images. The first image will be used as the main image.</small>
                 </div>
+                -->
 
                 <button type="submit" class="btn">Create Product</button>
             </form>

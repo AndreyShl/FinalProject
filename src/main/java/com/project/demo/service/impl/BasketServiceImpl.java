@@ -5,6 +5,7 @@ import com.project.demo.model.entity.Product;
 import com.project.demo.model.entity.User;
 import com.project.demo.model.repository.BasketRepository;
 import com.project.demo.service.BasketService;
+import com.project.demo.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,9 @@ public class BasketServiceImpl implements BasketService {
 
     @Autowired
     private BasketRepository basketRepository;
+
+    @Autowired
+    private ProductService productService;
 
     @Override
     public List<Basket> getBasketItemsByUser(User user) {
@@ -85,7 +89,11 @@ public class BasketServiceImpl implements BasketService {
     public BigDecimal calculateBasketTotal(User user) {
         List<Basket> basketItems = getBasketItemsByUser(user);
         return basketItems.stream()
-                .map(item -> item.getProduct().getPrice().multiply(item.getAmount()))
+                .map(item -> {
+                    // Use discounted price instead of regular price
+                    BigDecimal discountedPrice = productService.calculateDiscountedPrice(item.getProduct());
+                    return discountedPrice.multiply(item.getAmount());
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

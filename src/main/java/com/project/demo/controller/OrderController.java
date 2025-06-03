@@ -4,6 +4,7 @@ import com.project.demo.model.entity.*;
 import com.project.demo.model.repository.OrdersRepository;
 import com.project.demo.model.repository.ProductOrderRepository;
 import com.project.demo.service.BasketService;
+import com.project.demo.service.ProductService;
 import com.project.demo.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ public class OrderController {
 
     @Autowired
     private ProductOrderRepository productOrderRepository;
+
+    @Autowired
+    private ProductService productService;
 
     @GetMapping("/create")
     public String showCreateOrderForm(Model model, HttpSession session) {
@@ -72,6 +76,7 @@ public class OrderController {
         model.addAttribute("total", total);
         model.addAttribute("paymentMethods", paymentMethods);
         model.addAttribute("user", user);
+        model.addAttribute("productService", productService); // Pass the productService to the template
 
         return "orders/create";
     }
@@ -96,10 +101,12 @@ public class OrderController {
             return "redirect:/basket";
         }
 
-        // Calculate total price for the order
+        // Calculate total price for the order using discounted prices
         BigDecimal totalPrice = BigDecimal.ZERO;
         for (Basket basketItem : basketItems) {
-            totalPrice = totalPrice.add(basketItem.getProduct().getPrice().multiply(basketItem.getAmount()));
+            // Use discounted price instead of original price
+            BigDecimal discountedPrice = productService.calculateDiscountedPrice(basketItem.getProduct());
+            totalPrice = totalPrice.add(discountedPrice.multiply(basketItem.getAmount()));
         }
 
         try {
@@ -126,10 +133,21 @@ public class OrderController {
                 productOrder.setProduct(basketItem.getProduct());
                 productOrder.setOrder(order);
                 productOrder.setQuantity(basketItem.getAmount());
-                productOrder.setPrice(basketItem.getProduct().getPrice().multiply(basketItem.getAmount()));
+                // Use discounted price instead of original price
+                BigDecimal discountedPrice = productService.calculateDiscountedPrice(basketItem.getProduct());
+                productOrder.setPrice(discountedPrice.multiply(basketItem.getAmount()));
 
                 // Save the product order
                 productOrderRepository.save(productOrder);
+
+                // Update product remains (inventory)
+                Product product = basketItem.getProduct();
+                int orderedQuantity = basketItem.getAmount().intValue();
+                int currentRemains = product.getRemains();
+                int newRemains = currentRemains - orderedQuantity;
+                // Ensure remains doesn't go below zero
+                product.setRemains(Math.max(0, newRemains));
+                productService.saveProduct(product);
 
                 // Add to the order's list of product orders
                 order.getProductOrders().add(productOrder);

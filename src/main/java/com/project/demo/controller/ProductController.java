@@ -4,27 +4,25 @@ import com.project.demo.model.entity.Category;
 import com.project.demo.model.entity.Product;
 import com.project.demo.model.entity.ProductImage;
 import com.project.demo.model.entity.User;
-import com.project.demo.service.BasketService;
-import com.project.demo.service.CategoryService;
-import com.project.demo.service.ProductImageService;
-import com.project.demo.service.ProductService;
+import com.project.demo.service.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -41,6 +39,12 @@ public class ProductController {
 
     @Autowired
     private ProductImageService productImageService;
+
+    @Autowired
+    private FavouriteService favouriteService;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping
     public String getProducts() {
@@ -65,6 +69,25 @@ public class ProductController {
         List<Product> products = productService.getProductsByCategory(category);
         model.addAttribute("category", category);
         model.addAttribute("products", products);
+        model.addAttribute("productService", productService); // Pass the productService to the template
+
+        // Check if user is authenticated to determine favorites
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            User user = userService.findByLogin(authentication.getName());
+            if (user != null) {
+                // Create a map of product IDs to favorite status
+                Map<Integer, Boolean> favoriteProducts = new HashMap<>();
+                for (Product product : products) {
+                    favoriteProducts.put(product.getId(), favouriteService.isProductInFavourites(user, product));
+                }
+                model.addAttribute("favoriteProducts", favoriteProducts);
+                model.addAttribute("isAuthenticated", true);
+            }
+        } else {
+            model.addAttribute("isAuthenticated", false);
+        }
+
         return "products/category-products";
     }
 
@@ -83,7 +106,23 @@ public class ProductController {
             session.removeAttribute("errorMessage");
         }
 
-        model.addAttribute("product", productOpt.get());
+        Product product = productOpt.get();
+        model.addAttribute("product", product);
+        model.addAttribute("productService", productService); // Pass the productService to the template
+
+        // Check if user is authenticated to determine if product is in favorites
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            User user = userService.findByLogin(authentication.getName());
+            if (user != null) {
+                boolean isInFavorites = favouriteService.isProductInFavourites(user, product);
+                model.addAttribute("isInFavorites", isInFavorites);
+                model.addAttribute("isAuthenticated", true);
+            }
+        } else {
+            model.addAttribute("isAuthenticated", false);
+        }
+
         return "products/product-detail";
     }
 
@@ -103,5 +142,13 @@ public class ProductController {
         } catch (IOException e) {
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    @GetMapping("/search")
+    @ResponseBody
+    public List<Product> searchProducts(@RequestParam String query) {
+        // Search for products by name
+        List<Product> products = productService.searchProductsByName(query);
+        return products;
     }
 }

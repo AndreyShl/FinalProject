@@ -225,9 +225,17 @@
                 <p class="product-category" th:text="${'Category: ' + product.category.categoryName}">Category: Example</p>
             </div>
             <div class="product-price-container">
-                <p class="product-price" th:text="${'$' + product.price}">$0.00</p>
-                <p th:if="${product.discount != null && product.discount > 0}" class="product-discount" 
-                   th:text="${product.discount + '% off'}">0% off</p>
+                <!-- Show original price with strikethrough if there's a discount -->
+                <div th:if="${product.discount != null && product.discount > 0}">
+                    <p style="text-decoration: line-through; color: #999; margin: 0; font-size: 18px;" 
+                       th:text="${'$' + product.price}">$0.00</p>
+                    <p class="product-price" th:text="${'$' + productService.calculateDiscountedPrice(product)}">$0.00</p>
+                    <p class="product-discount" th:text="${product.discount + '% off'}">0% off</p>
+                </div>
+                <!-- Show regular price if no discount -->
+                <div th:unless="${product.discount != null && product.discount > 0}">
+                    <p class="product-price" th:text="${'$' + product.price}">$0.00</p>
+                </div>
             </div>
         </div>
 
@@ -268,12 +276,32 @@
                 <p class="product-remains" th:classappend="${product.remains < 10 ? 'low' : ''}" 
                    th:text="${'In stock: ' + product.remains + ' items'}">In stock: 0 items</p>
 
-                <form th:action="@{/basket/add/{id}(id=${product.id})}" method="post">
-                    <input type="hidden" name="amount" value="1">
-                    <button type="submit" class="add-to-cart-btn" th:disabled="${product.remains <= 0}">
-                        Add to Basket
-                    </button>
-                </form>
+                <div style="display: flex; gap: 10px;">
+                    <form th:action="@{/basket/add/{id}(id=${product.id})}" method="post">
+                        <input type="hidden" name="amount" value="1">
+                        <button type="submit" class="add-to-cart-btn" th:disabled="${product.remains <= 0}">
+                            Add to Basket
+                        </button>
+                    </form>
+
+                    <!-- Favorite button - only show if user is authenticated -->
+                    <div th:if="${isAuthenticated}" style="display: inline-block;">
+                        <!-- If product is in favorites, show remove button -->
+                        <form th:if="${isInFavorites}" th:action="@{/favourites/remove/{id}(id=${product.id})}" method="post">
+                            <input type="hidden" name="returnUrl" th:value="${'/products/' + product.id}">
+                            <button type="submit" style="background-color: #f44336; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-size: 16px;">
+                                Remove from Favorites
+                            </button>
+                        </form>
+                        <!-- If product is not in favorites, show add button -->
+                        <form th:unless="${isInFavorites}" th:action="@{/favourites/add/{id}(id=${product.id})}" method="post">
+                            <input type="hidden" name="returnUrl" th:value="${'/products/' + product.id}">
+                            <button type="submit" style="background-color: #2196F3; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-size: 16px;">
+                                Add to Favorites
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -300,5 +328,6 @@
     }
 </script>
 
+<script th:replace="fragments/header :: searchScript"></script>
 </body>
 </html>

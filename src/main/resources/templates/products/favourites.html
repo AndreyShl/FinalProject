@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${category.categoryName + ' - Products'}">Category Products</title>
+    <title>Your Favorite Products</title>
     <style th:replace="fragments/header :: headerStyle"></style>
     <style th:replace="fragments/footer :: footerStyle"></style>
     <style>
@@ -54,6 +54,7 @@
             overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             width: 100%;
+            position: relative;
         }
 
         .product-card:hover {
@@ -113,7 +114,6 @@
             font-weight: bold;
         }
 
-
         .no-products {
             text-align: center;
             padding: 50px;
@@ -127,6 +127,27 @@
             color: inherit;
             display: block;
         }
+
+        .remove-favorite {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .remove-favorite:hover {
+            background-color: #d32f2f;
+        }
     </style>
 </head>
 <body>
@@ -135,58 +156,39 @@
 
 <div class="main-content">
     <div class="page-header">
-        <h1 class="page-title" th:text="${category.categoryName }">Category Products</h1>
+        <h1 class="page-title">Your Favorite Products</h1>
         <a href="/products/categories" class="back-link">← Back to Categories</a>
     </div>
 
     <div class="products-container">
-        <div th:if="${#lists.isEmpty(products)}" class="no-products">
-            No products available in this category.
+        <div th:if="${#lists.isEmpty(favourites)}" class="no-products">
+            You don't have any favorite products yet. Browse our categories to find products you like!
         </div>
 
-        <div th:each="product : ${products}" class="product-card">
-
-            <!-- Favorite indicator/button - only show if user is authenticated -->
-            <div th:if="${isAuthenticated}" style="position: absolute; top: 10px; right: 10px; z-index: 10;">
-                <!-- If product is in favorites, show heart icon and remove form -->
-                <div th:if="${favoriteProducts != null && favoriteProducts[product.id]}" style="position: relative;">
-                    <span style="color: #f44336; font-size: 24px; cursor: pointer;">❤</span>
-                    <form th:action="@{/favourites/remove/{id}(id=${product.id})}" method="post" 
-                          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0;">
-                        <input type="hidden" name="returnUrl" th:value="${'/products/category/' + category.id}">
-                        <button type="submit" style="width: 100%; height: 100%; cursor: pointer;">Remove</button>
-                    </form>
-                </div>
-                <!-- If product is not in favorites, show outline heart and add form -->
-                <div th:unless="${favoriteProducts != null && favoriteProducts[product.id]}" style="position: relative;">
-                    <span style="color: #999; font-size: 24px; cursor: pointer;">♡</span>
-                    <form th:action="@{/favourites/add/{id}(id=${product.id})}" method="post"
-                          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0;">
-                        <input type="hidden" name="returnUrl" th:value="${'/products/category/' + category.id}">
-                        <button type="submit" style="width: 100%; height: 100%; cursor: pointer;">Add</button>
-                    </form>
-                </div>
-            </div>
-
-            <a th:href="@{/products/{id}(id=${product.id})}" class="product-link">
+        <div th:each="favourite : ${favourites}" class="product-card">
+            <form th:action="@{/favourites/remove/{id}(id=${favourite.product.id})}" method="post">
+                <input type="hidden" name="returnUrl" value="/favourites">
+                <button type="submit" class="remove-favorite" title="Remove from favorites">×</button>
+            </form>
+            <a th:href="@{/products/{id}(id=${favourite.product.id})}" class="product-link">
                 <div class="product-info">
-                    <div class="product-name" th:text="${product.name}">Product Name</div>
+                    <div class="product-name" th:text="${favourite.product.name}">Product Name</div>
                     <div class="price-discount-container">
                         <!-- Show original price with strikethrough if there's a discount -->
-                        <div th:if="${product.discount != null && product.discount > 0}">
+                        <div th:if="${favourite.product.discount != null && favourite.product.discount > 0}">
                             <div style="text-decoration: line-through; color: #999; font-size: 14px;" 
-                                 th:text="${'$' + product.price}">$0.00</div>
-                            <div class="product-price" th:text="${'$' + productService.calculateDiscountedPrice(product)}">$0.00</div>
-                            <div class="product-discount" th:text="${product.discount + '% off'}">0% off</div>
+                                 th:text="${'$' + favourite.product.price}">$0.00</div>
+                            <div class="product-price" th:text="${'$' + productService.calculateDiscountedPrice(favourite.product)}">$0.00</div>
+                            <div class="product-discount" th:text="${favourite.product.discount + '% off'}">0% off</div>
                         </div>
                         <!-- Show regular price if no discount -->
-                        <div th:unless="${product.discount != null && product.discount > 0}">
-                            <div class="product-price" th:text="${'$' + product.price}">$0.00</div>
+                        <div th:unless="${favourite.product.discount != null && favourite.product.discount > 0}">
+                            <div class="product-price" th:text="${'$' + favourite.product.price}">$0.00</div>
                         </div>
                     </div>
-                    <div class="product-description" th:text="${product.description}">Product description goes here.</div>
-                    <div class="product-remains" th:classappend="${product.remains < 10 ? 'low' : ''}" 
-                         th:text="${'In stock: ' + product.remains}">In stock: 0</div>
+                    <div class="product-description" th:text="${favourite.product.description}">Product description goes here.</div>
+                    <div class="product-remains" th:classappend="${favourite.product.remains < 10 ? 'low' : ''}" 
+                         th:text="${'In stock: ' + favourite.product.remains}">In stock: 0</div>
                 </div>
             </a>
         </div>
@@ -195,6 +197,5 @@
 
 <div th:replace="fragments/footer :: footer"></div>
 
-<script th:replace="fragments/header :: searchScript"></script>
 </body>
 </html>

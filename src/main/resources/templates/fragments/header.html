@@ -11,6 +11,10 @@
             <div class="logo">
                 <a href="/">My Coffee</a>
             </div>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search products..." autocomplete="off">
+                <div id="search-results" class="search-results"></div>
+            </div>
             <div class="user-balance" sec:authorize="isAuthenticated()">
                 <span>Баланс: </span>
                 <span th:text="${session.user != null ? session.user.balance + '$' : '0.00$'}" class="balance-amount">0.00$</span>
@@ -19,11 +23,12 @@
                 <div class="dropdown">
                     <button class="dropbtn">Menu</button>
                     <div class="dropdown-content">
-                        <a href="/users">Home</a>
+                        <a href="/">Home</a>
                         <a href="/products/categories">Categories</a>
                         <a sec:authorize="!isAuthenticated()" href="/login">Login</a>
                         <a sec:authorize="!isAuthenticated()" href="/register">Register</a>
                         <a sec:authorize="isAuthenticated()" href="/basket">Basket</a>
+                        <a sec:authorize="isAuthenticated()" href="/favourites">Favorites</a>
                         <a sec:authorize="isAuthenticated()" href="/orders">My Orders</a>
                         <a sec:authorize="isAuthenticated()" href="javascript:void(0);" onclick="document.getElementById('logout-form').submit();">Logout</a>
                         <form id="logout-form" action="/logout" method="post" style="display: none;">
@@ -55,6 +60,76 @@
             text-decoration: none;
             font-size: 1.5em;
             font-weight: bold;
+        }
+
+        /* Search Styles */
+        .search-container {
+            position: relative;
+            flex-grow: 1;
+            max-width: 400px;
+            margin: 0 20px;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .search-results {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .search-result-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .search-result-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .search-result-price {
+            color: #4CAF50;
+            font-size: 0.9em;
+            margin-top: 3px;
+        }
+
+        .search-result-category {
+            color: #777;
+            font-size: 0.8em;
+            margin-top: 2px;
+        }
+
+        .no-results {
+            padding: 10px;
+            color: #777;
+            text-align: center;
+            font-style: italic;
         }
 
         .user-balance {
@@ -123,5 +198,85 @@
             background-color: #3e8e41;
         }
     </style>
+
+    <script th:fragment="searchScript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search-input');
+            const searchResults = document.getElementById('search-results');
+            let debounceTimer;
+
+            // Function to handle search input
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+
+                // Clear previous timer
+                clearTimeout(debounceTimer);
+
+                // Hide results if query is empty
+                if (query === '') {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+
+                // Debounce to avoid too many requests
+                debounceTimer = setTimeout(function() {
+                    // Make AJAX request to search endpoint
+                    fetch(`/products/search?query=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Clear previous results
+                            searchResults.innerHTML = '';
+
+                            // Display results
+                            if (data.length > 0) {
+                                data.forEach(product => {
+                                    const resultItem = document.createElement('div');
+                                    resultItem.className = 'search-result-item';
+                                    resultItem.innerHTML = `
+                                        <div class="search-result-name">${product.name}</div>
+                                        <div class="search-result-price">${product.price ? '$' + parseFloat(product.price).toFixed(2) : 'Цена не указана'}
+                                        </div>
+                                        <div class="search-result-category">${product.category ? product.category.categoryName : 'No category'}</div>
+                                    `;
+
+                                    // Add click event to navigate to product page
+                                    resultItem.addEventListener('click', function() {
+                                        window.location.href = `/products/${product.id}`;
+                                    });
+
+                                    searchResults.appendChild(resultItem);
+                                });
+                            } else {
+                                // No results found
+                                const noResults = document.createElement('div');
+                                noResults.className = 'no-results';
+                                noResults.textContent = 'No products found';
+                                searchResults.appendChild(noResults);
+                            }
+
+                            // Show results
+                            searchResults.style.display = 'block';
+                        })
+                        .catch(error => {
+                            console.error('Error searching products:', error);
+                        });
+                }, 300); // 300ms debounce
+            });
+
+            // Hide results when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!searchInput.contains(event.target) && !searchResults.contains(event.target)) {
+                    searchResults.style.display = 'none';
+                }
+            });
+
+            // Show results when focusing on input if there's a value
+            searchInput.addEventListener('focus', function() {
+                if (this.value.trim() !== '') {
+                    searchResults.style.display = 'block';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

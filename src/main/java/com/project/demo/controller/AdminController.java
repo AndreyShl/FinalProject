@@ -49,8 +49,9 @@ public class AdminController {
     @Autowired
     private ProductOrderRepository productOrderRepository;
 
-    @Autowired
-    private ProductImageService productImageService;
+    // Temporarily commented out for image-related issues
+//    @Autowired
+//    private ProductImageService productImageService;
 
     // Admin dashboard
     @GetMapping
@@ -125,13 +126,17 @@ public class AdminController {
                                @RequestParam(value = "images", required = false) MultipartFile[] images,
                                RedirectAttributes redirectAttributes) {
         try {
+            // Ensure images field is not bound directly
+            product.setImages(null);
+
             // Create the product
             Product savedProduct = productService.createProduct(product, categoryId);
 
+            // Temporarily commented out for image-related issues
             // Save images if provided
-            if (images != null && images.length > 0) {
-                productImageService.saveProductImages(savedProduct, images);
-            }
+            // if (images != null && images.length > 0) {
+            //     productImageService.saveProductImages(savedProduct, images);
+            // }
 
             redirectAttributes.addFlashAttribute("message", "Product created successfully!");
         } catch (Exception e) {
@@ -163,13 +168,17 @@ public class AdminController {
                                @RequestParam(value = "newImages", required = false) MultipartFile[] newImages,
                                RedirectAttributes redirectAttributes) {
         try {
+            // Ensure images field is not bound directly
+            product.setImages(null);
+
             // Update the product
             Product updatedProduct = productService.updateProduct(product, categoryId);
 
+            // Temporarily commented out for image-related issues
             // Save new images if provided
-            if (newImages != null && newImages.length > 0) {
-                productImageService.saveProductImages(updatedProduct, newImages);
-            }
+            // if (newImages != null && newImages.length > 0) {
+            //     productImageService.saveProductImages(updatedProduct, newImages);
+            // }
 
             redirectAttributes.addFlashAttribute("message", "Product updated successfully!");
         } catch (Exception e) {
@@ -234,8 +243,9 @@ public class AdminController {
         return "redirect:/admin/orders";
     }
 
+    // Temporarily commented out for image-related issues
     // Product Image Management
-
+    /*
     @PostMapping("/products/images/{imageId}/delete")
     @ResponseBody
     public Map<String, Boolean> deleteProductImage(@PathVariable Integer imageId) {
@@ -267,4 +277,5 @@ public class AdminController {
             return ResponseEntity.internalServerError().build();
         }
     }
+    */
 }
