@@ -3,12 +3,10 @@ package com.project.demo.controller;
 import com.project.demo.model.entity.Category;
 import com.project.demo.model.entity.Order;
 import com.project.demo.model.entity.Product;
-import com.project.demo.model.entity.ProductImage;
 import com.project.demo.model.repository.OrdersRepository;
 import com.project.demo.model.repository.ProductOrderRepository;
 import com.project.demo.service.AdminService;
 import com.project.demo.service.CategoryService;
-import com.project.demo.service.ProductImageService;
 import com.project.demo.service.ProductService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,10 +46,6 @@ public class AdminController {
 
     @Autowired
     private ProductOrderRepository productOrderRepository;
-
-    // Temporarily commented out for image-related issues
-//    @Autowired
-//    private ProductImageService productImageService;
 
     // Admin dashboard
     @GetMapping
@@ -132,12 +126,6 @@ public class AdminController {
             // Create the product
             Product savedProduct = productService.createProduct(product, categoryId);
 
-            // Temporarily commented out for image-related issues
-            // Save images if provided
-            // if (images != null && images.length > 0) {
-            //     productImageService.saveProductImages(savedProduct, images);
-            // }
-
             redirectAttributes.addFlashAttribute("message", "Product created successfully!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error creating product: " + e.getMessage());
@@ -173,12 +161,6 @@ public class AdminController {
 
             // Update the product
             Product updatedProduct = productService.updateProduct(product, categoryId);
-
-            // Temporarily commented out for image-related issues
-            // Save new images if provided
-            // if (newImages != null && newImages.length > 0) {
-            //     productImageService.saveProductImages(updatedProduct, newImages);
-            // }
 
             redirectAttributes.addFlashAttribute("message", "Product updated successfully!");
         } catch (Exception e) {
@@ -243,39 +225,4 @@ public class AdminController {
         return "redirect:/admin/orders";
     }
 
-    // Temporarily commented out for image-related issues
-    // Product Image Management
-    /*
-    @PostMapping("/products/images/{imageId}/delete")
-    @ResponseBody
-    public Map<String, Boolean> deleteProductImage(@PathVariable Integer imageId) {
-        boolean success = productImageService.deleteProductImage(imageId);
-        return Map.of("success", success);
-    }
-
-    @PostMapping("/products/images/{imageId}/set-main")
-    @ResponseBody
-    public Map<String, Boolean> setMainProductImage(@PathVariable Integer imageId) {
-        boolean success = productImageService.setMainProductImage(imageId);
-        return Map.of("success", success);
-    }
-
-    @GetMapping("/products/images/{imageId}")
-    public ResponseEntity<byte[]> getProductImage(@PathVariable Integer imageId) {
-        try {
-            ProductImage image = productImageService.getProductImage(imageId);
-            if (image != null) {
-                Path imagePath = Paths.get(image.getImagePath());
-                byte[] imageBytes = Files.readAllBytes(imagePath);
-
-                return ResponseEntity.ok()
-                        .contentType(MediaType.IMAGE_JPEG)
-                        .body(imageBytes);
-            }
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-    */
 }

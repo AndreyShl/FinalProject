@@ -34,6 +34,7 @@ public class    RegisterUserController {
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
             return "users/register";
+
         }
     }
 }
