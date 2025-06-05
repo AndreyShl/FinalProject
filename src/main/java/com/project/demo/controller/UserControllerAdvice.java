@@ -21,24 +21,24 @@ public class UserControllerAdvice {
     private UserService userService;
 
     /**
-     * Добавляет информацию о текущем пользователе в модель и сессию на всех страницах.
+     * Adds information about the current user to the model and session on all pages.
      *
-     * @param model Модель для добавления атрибутов
-     * @param session HTTP-сессия для сохранения пользователя
+     * @param model A model for adding attributes
+     * @param session HTTP-session for saving the user
      */
     @ModelAttribute
     public void addUserToModel(Model model, HttpSession session) {
-        // Получаем аутентифицированного пользователя
+        // Getting an authenticated user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Проверяем, аутентифицирован ли пользователь
+        // Checking if the user is authenticated
         if (authentication != null && authentication.isAuthenticated() &&
                 !authentication.getName().equals("anonymousUser")) {
 
-            // Получаем сущность пользователя из базы данных
+            // Getting the user's entity from the database
             User user = userService.findByLogin(authentication.getName());
 
-            // Если пользователь найден, добавляем его в сессию и модель
+            // If the user is found, add him to the session and model.
             if (user != null) {
                 session.setAttribute("user", user);
                 model.addAttribute("currentUser", user);

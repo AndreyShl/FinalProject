@@ -126,23 +126,23 @@ public class ProductController {
         return "products/product-detail";
     }
 
-    @GetMapping("/images/{imageId}")
-    public ResponseEntity<byte[]> getProductImage(@PathVariable Integer imageId) {
-        try {
-            ProductImage image = productImageService.getProductImage(imageId);
-            if (image != null) {
-                Path imagePath = Paths.get(image.getImagePath());
-                byte[] imageBytes = Files.readAllBytes(imagePath);
-
-                return ResponseEntity.ok()
-                        .contentType(MediaType.IMAGE_JPEG)
-                        .body(imageBytes);
-            }
-            return ResponseEntity.notFound().build();
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().build();
-        }
-    }
+//    @GetMapping("/images/{imageId}")
+//    public ResponseEntity<byte[]> getProductImage(@PathVariable Integer imageId) {
+//        try {
+//            ProductImage image = productImageService.getProductImage(imageId);
+//            if (image != null) {
+//                Path imagePath = Paths.get(image.getImagePath());
+//                byte[] imageBytes = Files.readAllBytes(imagePath);
+//
+//                return ResponseEntity.ok()
+//                        .contentType(MediaType.IMAGE_JPEG)
+//                        .body(imageBytes);
+//            }
+//            return ResponseEntity.notFound().build();
+//        } catch (IOException e) {
+//            return ResponseEntity.internalServerError().build();
+//        }
+//    }
 
     @GetMapping("/search")
     @ResponseBody

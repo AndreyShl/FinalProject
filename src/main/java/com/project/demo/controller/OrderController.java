@@ -61,14 +61,14 @@ public class OrderController {
         BigDecimal total = basketService.calculateBasketTotal(user);
 
         // Create payment methods list
-        List<String> paymentMethods = new java.util.ArrayList<>(List.of("Credit Card", "PayPal", "Cash on Delivery"));
+        List<String> paymentMethods = new ArrayList<>(List.of("Credit Card", "PayPal", "Cash on Delivery"));
 
         // Check if user has a linked card and add it to payment methods
         if (userService.hasPaymentCard(user)) {
             String lastFourDigits = user.getCardNumber().substring(user.getCardNumber().length() - 4);
             String cardOption = "My Card (**** **** **** " + lastFourDigits + ")";
             // Add at the beginning of the list
-            paymentMethods.add(0, cardOption);
+            paymentMethods.addFirst(cardOption);
         }
 
         // Add data to model
@@ -110,7 +110,7 @@ public class OrderController {
         }
 
         try {
-            // Списываем средства с баланса пользователя
+            // Deducting funds from the user's balance
             user = userService.deductFromBalance(user, totalPrice);
 
             // Create a single order for all basket items
@@ -163,7 +163,7 @@ public class OrderController {
             return "redirect:/orders/confirmation";
 
         } catch (UserService.InsufficientBalanceException e) {
-            // Если на балансе недостаточно средств, возвращаем пользователя на страницу корзины с сообщением об ошибке
+            // If there are not enough funds in the balance, we return the user to the shopping cart page with an error message.
             model.addAttribute("basketItems", basketItems);
             model.addAttribute("total", totalPrice);
             model.addAttribute("errorMessage", "Недостаточно средств на балансе. Текущий баланс: " + user.getBalance() + ", Требуется: " + totalPrice);
