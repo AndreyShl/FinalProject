@@ -28,6 +28,7 @@ public class Order {
     @Column(name = "price")
     private BigDecimal price;
 
+
     @Column(name = "order_status")
     private String orderStatus;
 
